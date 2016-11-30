@@ -1,0 +1,177 @@
+group 'org.test'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+//        maven {
+//            url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+//        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'maven-publish'
+// apply plugin: 'kotlin2js'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+//    maven {
+//        url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+//    }
+}
+
+
+
+sourceSets {
+
+    jre6 {
+        java {
+            srcDir("src/main/jre6/java")
+        }
+        kotlin {
+            srcDir("src/main/jre6/kotlin")
+            srcDirs += sourceSets.main.kotlin.srcDirs
+        }
+        // compileClasspath += sourceSets.main.compileClasspath
+    }
+
+    jre6Test {
+        java {
+            srcDir("src/test/jre6/java")
+        }
+        kotlin {
+            srcDir("src/test/jre6/kotlin")
+            srcDirs += sourceSets.test.kotlin.srcDirs
+        }
+    }
+
+
+
+    jre8 {
+        java {
+            srcDir("src/main/jre8/java")
+        }
+        kotlin {
+            srcDir("src/main/jre8/kotlin")
+            srcDirs += sourceSets.main.kotlin.srcDirs
+        }
+    }
+
+    jre8Test {
+        java {
+            srcDir("src/test/jre8/java")
+        }
+        kotlin {
+            srcDir("src/test/jre8/kotlin")
+            srcDirs += sourceSets.test.kotlin.srcDirs
+        }
+    }
+
+    js {
+        kotlin {
+            srcDir("src/main/js/kotlin")
+            srcDirs += sourceSets.main.kotlin.srcDirs
+        }
+    }
+
+    jsTest {
+        kotlin {
+            srcDir("src/test/js/kotlin")
+            srcDirs += sourceSets.test.kotlin.srcDirs
+        }
+    }
+}
+
+configurations {
+    // created for source sets
+//    jre6Compile
+//    jre8Compile
+//    jsCompile
+    jre6TestCompile.extendsFrom(jre6Compile)
+    jre8TestCompile.extendsFrom(jre8Compile)
+    jsTestCompile.extendsFrom(jsCompile)
+}
+
+dependencies {
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    jre6Compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    jre6Compile "joda-time:joda-time:2.9.2"
+
+
+    jre8Compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    jre8Compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+
+    jsCompile "org.jetbrains.kotlin:kotlin-js-library:$kotlin_version"
+}
+
+compileJre6Kotlin {
+    kotlinOptions.jdkHome = System.getenv("JDK_16")
+}
+
+compileJre8Kotlin {
+    kotlinOptions.jdkHome = System.getenv("JDK_18")
+}
+
+compileKotlin {
+    enabled = false
+}
+
+task jre6Jar(type: Jar) {
+    baseName project.name + "-jre6"
+    from sourceSets.jre6.output
+}
+task jre6SourceJar(type: Jar) {
+    baseName project.name + "-jre6"
+    classifier "sources"
+    from sourceSets.jre6.allSource
+}
+
+
+task jre8Jar(type: Jar) {
+    baseName project.name + "-jre8"
+    from sourceSets.jre8.output
+}
+task jre8SourceJar(type: Jar) {
+    baseName project.name + "-jre8"
+    classifier "sources"
+    from sourceSets.jre8.allSource
+}
+
+
+artifacts {
+    jre6Runtime jre6Jar
+    jre8Runtime jre8Jar
+}
+// incubating
+publishing {
+    // TODO: commonlib mutlitarget lib
+    publications {
+        jre6Publication(MavenPublication) {
+            artifactId jre6Jar.baseName
+            from new org.gradle.api.internal.java.JavaLibrary(configurations.jre6Runtime.artifacts.toArray()[0], configurations.jre6Runtime.allDependencies)
+            artifact(jre6SourceJar)
+
+        }
+        jre8Publication(MavenPublication) {
+            artifactId jre8Jar.baseName
+            from new org.gradle.api.internal.java.JavaLibrary(configurations.jre8Runtime.artifacts.toArray()[0], configurations.jre8Runtime.allDependencies)
+            artifact(jre8SourceJar)
+        }
+    }
+//    repositories {
+//        mavenLocal()
+//    }
+}
+
+
+build.dependsOn(jre6Classes, jre8Classes)
