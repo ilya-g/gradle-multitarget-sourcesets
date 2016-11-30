@@ -1,15 +1,13 @@
-group 'org.test'
+group 'org.test.multisourceset'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1-SNAPSHOT'
+    ext.kotlin_version = '1.1-M02'
 
     repositories {
         mavenCentral()
         mavenLocal()
-//        maven {
-//            url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
-//        }
+        maven { url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -23,9 +21,7 @@ apply plugin: 'maven-publish'
 repositories {
     mavenCentral()
     mavenLocal()
-//    maven {
-//        url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
-//    }
+    maven { url  "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
 }
 
 
